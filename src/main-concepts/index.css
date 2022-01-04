@@ -1,0 +1,13 @@
+.switch-theme {
+  margin: 24px;
+}
+
+.switch-theme .dark {
+  color: #fff;
+  background-color: #282c34;
+  border-color: #fff;
+}
+.switch-theme .light {
+  color: #444;
+  background-color: #fff;
+}

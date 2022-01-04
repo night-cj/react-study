@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import './index.css'
 
+const ThemeContext = React.createContext('light')
 // 更新时间
 class Tick extends React.Component {
   constructor(props) {
@@ -20,8 +22,9 @@ class Tick extends React.Component {
       date: String(new Date()),
     })
   }
+  static contextType = ThemeContext
   render() {
-    return <div>{this.state.date}</div>
+    return <div className={this.context}>{this.state.date}</div>
   }
 }
 
@@ -47,12 +50,11 @@ class NameForm extends React.Component {
   }
 
   render() {
-    console.log(this)
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form onSubmit={this.handleSubmit} className={this.props.className} style={{ padding: '8px' }}>
         <label>
-          名字:
-          <input type="text" value={this.state.value} onChange={this.handleChange} />
+          {this.props.children || '名字:'}
+          <input className={this.props.className} type="text" value={this.state.value} onChange={this.handleChange} />
         </label>
         <input type="submit" value="提交" />
       </form>
@@ -103,9 +105,9 @@ class TemperatureInput extends React.Component {
     const temperature = this.props.temperature
     const scale = this.props.scale
     return (
-      <fieldset>
+      <fieldset className={this.props.className}>
         <legend>输入温度类型: {scaleNames[scale]}</legend>
-        <input value={temperature} onChange={this.handleChange} />
+        <input className={this.props.className} value={temperature} onChange={this.handleChange} />
       </fieldset>
     )
   }
@@ -131,23 +133,69 @@ class Calculator extends React.Component {
     const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature
     const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature
     return (
-      <div>
-        <BoilingVerdict celsius={celsius} />
-        <TemperatureInput scale="c" temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
-        <TemperatureInput scale="f" temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+      <div className={this.props.className}>
+        <BoilingVerdict className={this.props.className} celsius={celsius} />
+        <TemperatureInput className={this.props.className} scale="c" temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
+        <TemperatureInput className={this.props.className} scale="f" temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
       </div>
     )
   }
 }
 
 // context
+class SwitchTheme extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      theme: 'light',
+    }
+    this.handleSwitch = this.handleSwitch.bind(this)
+  }
+
+  handleSwitch(e) {
+    this.setState({
+      theme: e.target.value,
+    })
+  }
+
+  render() {
+    return (
+      <div className="switch-theme">
+        <label>
+          <input type="radio" name="switch" value="light" defaultChecked={this.state.theme === 'light'} onClick={this.handleSwitch}></input>白
+        </label>
+        <label>
+          <input type="radio" name="switch" value="dark" defaultChecked={this.state.theme === 'dark'} onClick={this.handleSwitch}></input>黑
+        </label>
+
+        <ThemeContext.Provider value={this.state.theme}>
+          <Tick />
+          <NameForm>
+            <span>姓名:</span>
+          </NameForm>
+          <Calculator />
+        </ThemeContext.Provider>
+        {/* <ThemeContext.Consumer>
+          {(theme, ToggleTheme) => {
+
+          }}
+        </ThemeContext.Consumer> */}
+      </div>
+    )
+  }
+}
 
 export default function () {
   return (
     <div>
-      <Tick />
+      {/* <Tick />
+      <hr />
       <NameForm />
+      <hr />
       <Calculator />
+      <hr /> */}
+      <SwitchTheme />
+      <hr />
     </div>
   )
 }
