@@ -1,39 +1,38 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import './index.css'
-
+const themes = ['light', 'dark']
 const ThemeContext = React.createContext({
-  theme: 'light',
-  toggleTheme: () => {},
+  theme: themes[0],
+  toggleTheme: () => { },
 })
 // 更新时间
 class Tick extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       date: String(new Date()),
     }
   }
-  componentDidMount() {
+  componentDidMount () {
     this.timerId = setInterval(() => this.tick(), 1000)
   }
-  componentWillUnmount() {
+  componentWillUnmount () {
     clearInterval(this.timerId)
   }
-  tick() {
+  tick () {
     this.setState({
       date: String(new Date()),
     })
   }
   static contextType = ThemeContext
-  render() {
-    return <div className={this.context}>{this.state.date}</div>
+  render () {
+    return <div className={this.context.theme}>{this.state.date}</div>
   }
 }
 
 // form
 class NameForm extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       value: '123',
@@ -42,28 +41,27 @@ class NameForm extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  handleChange(e) {
-    console.log(e)
+  handleChange (e) {
     this.setState({ value: e.target.value })
   }
 
-  handleSubmit(e) {
-    console.log('提交 ： ' + this.state.value)
+  handleSubmit (e) {
+    this.props.onSuccess(this.state.value)
     e.preventDefault()
   }
-
-  render() {
+  render () {
     return (
-      <form onSubmit={this.handleSubmit} className={this.props.className} style={{ padding: '8px' }}>
+      <form onSubmit={this.handleSubmit} className={this.context.theme} style={{ padding: '8px' }}>
         <label>
           {this.props.children || '名字:'}
-          <input className={this.props.className} type="text" value={this.state.value} onChange={this.handleChange} />
+          <input className={this.context.theme} type="text" value={this.state.value} onChange={this.handleChange} />
         </label>
         <input type="submit" value="提交" />
       </form>
     )
   }
 }
+NameForm.contextType = ThemeContext
 
 // 状态提升
 const scaleNames = {
@@ -72,16 +70,16 @@ const scaleNames = {
 }
 
 // 转摄氏度
-function toCelsius(fahrenheit) {
+function toCelsius (fahrenheit) {
   return ((fahrenheit - 32) * 5) / 9
 }
 
 // 转华氏度
-function toFahrenheit(celsius) {
+function toFahrenheit (celsius) {
   return (celsius * 9) / 5 + 32
 }
 
-function tryConvert(temperature, convert) {
+function tryConvert (temperature, convert) {
   const val = parseFloat(temperature)
   if (Number.isNaN(val)) return ''
   const output = convert(val)
@@ -89,7 +87,7 @@ function tryConvert(temperature, convert) {
   return rounded.toString()
 }
 
-function BoilingVerdict(props) {
+function BoilingVerdict (props) {
   if (props.celsius >= 100) {
     return <p>水沸腾了 {props.celsius} ℃</p>
   }
@@ -97,91 +95,105 @@ function BoilingVerdict(props) {
 }
 
 class TemperatureInput extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.handleChange = this.handleChange.bind(this)
   }
-  handleChange(e) {
+  handleChange (e) {
     this.props.onTemperatureChange(e.target.value)
   }
-  render() {
+  static contextType = ThemeContext
+  render () {
     const temperature = this.props.temperature
     const scale = this.props.scale
     return (
-      <fieldset className={this.props.className}>
+      <fieldset className={this.context.theme}>
         <legend>输入温度类型: {scaleNames[scale]}</legend>
-        <input className={this.props.className} value={temperature} onChange={this.handleChange} />
+        <input className={this.context.theme} value={temperature} onChange={this.handleChange} />
       </fieldset>
     )
   }
 }
 
 class Calculator extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.handleCelsiusChange = this.handleCelsiusChange.bind(this)
     this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this)
     this.state = { temperature: '', scale: 'c' }
   }
-  handleCelsiusChange(temperature) {
+  handleCelsiusChange (temperature) {
     this.setState({ scale: 'c', temperature })
   }
 
-  handleFahrenheitChange(temperature) {
+  handleFahrenheitChange (temperature) {
     this.setState({ scale: 'f', temperature })
   }
-  render() {
+  static contextType = ThemeContext
+  render () {
     const scale = this.state.scale
     const temperature = this.state.temperature
     const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature
     const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature
     return (
-      <div className={this.props.className}>
-        <BoilingVerdict className={this.props.className} celsius={celsius} />
-        <TemperatureInput className={this.props.className} scale="c" temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
-        <TemperatureInput className={this.props.className} scale="f" temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+      <div className={this.context.theme}>
+        <BoilingVerdict className={this.context.theme} celsius={celsius} />
+        <TemperatureInput className={this.context.theme} scale="c" temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
+        <TemperatureInput className={this.context.theme} scale="f" temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
       </div>
     )
   }
+}
+
+function InputSwitchTheme () {
+  return <ThemeContext.Consumer>
+    {
+      ({ theme, toggleTheme }) => {
+        return <NameForm onSuccess={toggleTheme} />
+      }
+    }
+  </ThemeContext.Consumer>
 }
 
 // context
 class SwitchTheme extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
+    this.toggleTheme = (value) => {
+      if (!themes.includes(value)) return
+      this.setState(state => ({
+        theme: value
+      }))
+    }
+
     this.state = {
       theme: 'light',
+      toggleTheme: this.toggleTheme
     }
-    this.toggleTheme = this.toggleTheme.bind(this)
   }
 
-  toggleTheme(e) {
-    this.setState({
-      theme: e.target.value,
-    })
-  }
-
-  render() {
+  render () {
     return (
       <div className="switch-theme">
         <label className={this.state.theme}>
-          <input type="radio" name="switch" value="light" defaultChecked={this.state.theme === 'light'} onClick={this.toggleTheme}></input>白
+          <input type="radio" name="switch" value="light" checked={this.state.theme === 'light'} onChange={e => this.toggleTheme(e.target.value)}></input>白
         </label>
         <label className={this.state.theme}>
-          <input type="radio" name="switch" value="dark" defaultChecked={this.state.theme === 'dark'} onClick={this.toggleTheme}></input>黑
+          <input type="radio" name="switch" value="dark" checked={this.state.theme === 'dark'} onChange={e => this.toggleTheme(e.target.value)}></input>黑
         </label>
-
-        <ThemeContext.Provider value={this.state.theme}>{this.props.children}</ThemeContext.Provider>
+        <ThemeContext.Provider value={this.state}>{this.props.children}</ThemeContext.Provider>
       </div>
     )
   }
 }
 
-export default function () {
+const el = function () {
   return (
     <div>
       <SwitchTheme>
         <Tick />
+        <hr />
+        <InputSwitchTheme />
         <hr />
         <NameForm>
           <span>姓名:</span>
@@ -194,3 +206,4 @@ export default function () {
     </div>
   )
 }
+export default el
