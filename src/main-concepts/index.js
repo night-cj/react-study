@@ -2,7 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
 
-const ThemeContext = React.createContext('light')
+const ThemeContext = React.createContext({
+  theme: 'light',
+  toggleTheme: () => {},
+})
 // 更新时间
 class Tick extends React.Component {
   constructor(props) {
@@ -149,10 +152,10 @@ class SwitchTheme extends React.Component {
     this.state = {
       theme: 'light',
     }
-    this.handleSwitch = this.handleSwitch.bind(this)
+    this.toggleTheme = this.toggleTheme.bind(this)
   }
 
-  handleSwitch(e) {
+  toggleTheme(e) {
     this.setState({
       theme: e.target.value,
     })
@@ -161,25 +164,14 @@ class SwitchTheme extends React.Component {
   render() {
     return (
       <div className="switch-theme">
-        <label>
-          <input type="radio" name="switch" value="light" defaultChecked={this.state.theme === 'light'} onClick={this.handleSwitch}></input>白
+        <label className={this.state.theme}>
+          <input type="radio" name="switch" value="light" defaultChecked={this.state.theme === 'light'} onClick={this.toggleTheme}></input>白
         </label>
-        <label>
-          <input type="radio" name="switch" value="dark" defaultChecked={this.state.theme === 'dark'} onClick={this.handleSwitch}></input>黑
+        <label className={this.state.theme}>
+          <input type="radio" name="switch" value="dark" defaultChecked={this.state.theme === 'dark'} onClick={this.toggleTheme}></input>黑
         </label>
 
-        <ThemeContext.Provider value={this.state.theme}>
-          <Tick />
-          <NameForm>
-            <span>姓名:</span>
-          </NameForm>
-          <Calculator />
-        </ThemeContext.Provider>
-        {/* <ThemeContext.Consumer>
-          {(theme, ToggleTheme) => {
-
-          }}
-        </ThemeContext.Consumer> */}
+        <ThemeContext.Provider value={this.state.theme}>{this.props.children}</ThemeContext.Provider>
       </div>
     )
   }
@@ -188,13 +180,16 @@ class SwitchTheme extends React.Component {
 export default function () {
   return (
     <div>
-      {/* <Tick />
-      <hr />
-      <NameForm />
-      <hr />
-      <Calculator />
-      <hr /> */}
-      <SwitchTheme />
+      <SwitchTheme>
+        <Tick />
+        <hr />
+        <NameForm>
+          <span>姓名:</span>
+        </NameForm>
+        <hr />
+        <Calculator />
+        <hr />
+      </SwitchTheme>
       <hr />
     </div>
   )
