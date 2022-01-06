@@ -35,7 +35,7 @@ class NameForm extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      value: '123',
+      value: '',
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -50,10 +50,13 @@ class NameForm extends React.Component {
     e.preventDefault()
   }
   render () {
+    if (!this.props.children && this.state.value && !themes.includes(this.state.value)) {
+      throw new Error('主题不存在')
+    }
     return (
       <form onSubmit={this.handleSubmit} className={this.context.theme} style={{ padding: '8px' }}>
         <label>
-          {this.props.children || '名字:'}
+          {this.props.children || '主题:'}
           <input className={this.context.theme} type="text" value={this.state.value} onChange={this.handleChange} />
         </label>
         <input type="submit" value="提交" />
@@ -145,31 +148,67 @@ class Calculator extends React.Component {
   }
 }
 
-function InputSwitchTheme () {
-  return <ThemeContext.Consumer>
-    {
-      ({ theme, toggleTheme }) => {
-        return <NameForm onSuccess={toggleTheme} />
-      }
+class InputSwitchTheme extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      isErr: false,
+      errorInfo: ''
     }
-  </ThemeContext.Consumer>
+  }
+
+  // static getDerivedStateFromError (err) {
+  //   // this.setState({
+  //   //   isErr: true,
+  //   //   errorInfo: err
+  //   // })
+  //   return {
+  //     isErr: true,
+  //     errorInfo: err
+  //   }
+  // }
+  componentDidCatch (error, errorInfo) {
+    this.setState({
+      isErr: true,
+      errorInfo: errorInfo
+    })
+  }
+  render () {
+    console.log(this.state.isErr)
+    if (this.state.isErr) return this.state.errorInfo
+    return <ThemeContext.Consumer>
+      {
+        ({ theme, toggleTheme }) => {
+          return <NameForm
+            onSuccess={toggleTheme}
+            onChange={this.onChange}
+          />
+        }
+      }
+    </ThemeContext.Consumer>
+  }
 }
 
-// context
+// context 切换主题
 class SwitchTheme extends React.Component {
   constructor (props) {
     super(props)
     this.toggleTheme = (value) => {
-      if (!themes.includes(value)) return
       this.setState(state => ({
         theme: value
       }))
     }
-
     this.state = {
       theme: 'light',
       toggleTheme: this.toggleTheme
     }
+  }
+  static getDerivedStateFromError (error) {
+    console.log(error)
+    return {}
+  }
+  componentDidCatch (error, errorInfo) {
+    console.log(error, errorInfo)
   }
 
   render () {
@@ -186,7 +225,6 @@ class SwitchTheme extends React.Component {
     )
   }
 }
-
 const el = function () {
   return (
     <div>
