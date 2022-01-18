@@ -1,3 +1,19 @@
 hr {
   margin: 24px 0;
 }
+
+.nav ul {
+  display: flex;
+}
+
+.nav ul li {
+  list-style: none;
+  border: 1px solid #000;
+  cursor: pointer;
+}
+
+.nav ul li a {
+  text-decoration: none;
+  display: block;
+  padding: 10px 40px;
+}

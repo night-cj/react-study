@@ -50,9 +50,6 @@ class NameForm extends React.Component {
     e.preventDefault()
   }
   render () {
-    if (!this.props.children && this.state.value && !themes.includes(this.state.value)) {
-      throw new Error('主题不存在')
-    }
     return (
       <form onSubmit={this.handleSubmit} className={this.context.theme} style={{ padding: '8px' }}>
         <label>
@@ -149,33 +146,7 @@ class Calculator extends React.Component {
 }
 
 class InputSwitchTheme extends React.Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      isErr: false,
-      errorInfo: ''
-    }
-  }
-
-  // static getDerivedStateFromError (err) {
-  //   // this.setState({
-  //   //   isErr: true,
-  //   //   errorInfo: err
-  //   // })
-  //   return {
-  //     isErr: true,
-  //     errorInfo: err
-  //   }
-  // }
-  componentDidCatch (error, errorInfo) {
-    this.setState({
-      isErr: true,
-      errorInfo: errorInfo
-    })
-  }
   render () {
-    console.log(this.state.isErr)
-    if (this.state.isErr) return this.state.errorInfo
     return <ThemeContext.Consumer>
       {
         ({ theme, toggleTheme }) => {
